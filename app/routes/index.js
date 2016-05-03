@@ -1,57 +1,58 @@
 'use strict';
 
 var path = process.cwd();
-var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
+var Url = require('../models/url');
+var random = require('../common/random');
+require('dotenv').load();
 
-module.exports = function (app, passport) {
-
-	function isLoggedIn (req, res, next) {
-		if (req.isAuthenticated()) {
-			return next();
-		} else {
-			res.redirect('/login');
+module.exports = function (app) {
+	
+	app.get('/',function (req, res) {
+		res.sendFile(path + '/public/index.html');
+	});
+	
+	app.get('/new/:url',function (req, res) {
+		var url = req.params.url;
+		res.setHeader('Content-Type', 'application/json');
+		if(/^(http:\/\/)?[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+$/.test(url)){
+			var urlNum = random();
+			var newUrl = new Url({ url: url, urlNum: urlNum });
+			
+			newUrl.save(function (err, data) {
+				if (err) console.log(err);
+				else console.log('Saved : ', data );
+			});
+			res.json({"original_url":url,"short_url":process.env.APP_URL + urlNum});
 		}
-	}
-
-	var clickHandler = new ClickHandler();
-
-	app.route('/')
-		.get(isLoggedIn, function (req, res) {
-			res.sendFile(path + '/public/index.html');
-		});
-
-	app.route('/login')
-		.get(function (req, res) {
-			res.sendFile(path + '/public/login.html');
-		});
-
-	app.route('/logout')
-		.get(function (req, res) {
-			req.logout();
-			res.redirect('/login');
-		});
-
-	app.route('/profile')
-		.get(isLoggedIn, function (req, res) {
-			res.sendFile(path + '/public/profile.html');
-		});
-
-	app.route('/api/:id')
-		.get(isLoggedIn, function (req, res) {
-			res.json(req.user.github);
-		});
-
-	app.route('/auth/github')
-		.get(passport.authenticate('github'));
-
-	app.route('/auth/github/callback')
-		.get(passport.authenticate('github', {
-			successRedirect: '/',
-			failureRedirect: '/login'
-		}));
-
-	app.route('/api/:id/clicks')
-		.get(isLoggedIn, clickHandler.getClicks)
-		.post(isLoggedIn, clickHandler.addClick)
-		.delete(isLoggedIn, clickHandler.resetClicks);
+		else{
+			res.json({"error":"Wrong url format."});
+		}
+	});
+	
+	app.get('/url-list', function(req, res) {
+	  Url.find({}, function(err, urls) {
+	  	if (err) throw err;
+	    res.send(urls);  
+	  });
+	});
+	
+	app.get('/:id', function(req, res) {
+	  var id = req.params.id;
+	  Url.findOne({ urlNum: id }, function(err, url) {
+	  	if (err) throw err;
+	  	
+	  	if(url){
+	  		res.redirect('http://' + url.url);
+	  	}
+	  	else{
+	  		res.setHeader('Content-Type', 'application/json');
+	  		res.json({"error":"This url is not in the database."})
+	  	}
+	  	
+	      
+	  });
+	});
+	
+	
+	
 };
