@@ -38,11 +38,11 @@ module.exports = function (app) {
 	
 	app.get('/:id', function(req, res) {
 	  var id = req.params.id;
-	  Url.findOne({ urlNum: id }, function(err, url) {
+	  Url.findOne({ urlNum: id }, function(err, doc) {
 	  	if (err) throw err;
 	  	
-	  	if(url){
-	  		res.redirect('http://' + url.url);
+	  	if(doc){
+	  		res.redirect('http://' + doc.url);
 	  	}
 	  	else{
 	  		res.setHeader('Content-Type', 'application/json');
