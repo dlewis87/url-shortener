@@ -38,7 +38,7 @@ module.exports = function (app) {
 	
 	app.get('/:id', function(req, res) {
 	  var id = req.params.id;
-	  Url.findOne({ urlNum: id }, function(err, doc) {
+	  Url.findOne({ urlNum: Number(id) }, function(err, doc) {
 	  	if (err) throw err;
 	  	
 	  	if(doc){
