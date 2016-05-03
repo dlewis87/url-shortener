@@ -31,15 +31,15 @@ module.exports = function (app) {
 	
 	app.get('/url-list', function(req, res) {
 	  Url.find({}, function(err, urls) {
-	  	if (err) throw err;
+	  	if (err) console.log(err);
 	    res.send(urls);  
 	  });
 	});
 	
 	app.get('/:id', function(req, res) {
 	  var id = req.params.id;
-	  Url.findOne({ urlNum: Number(id) }, function(err, doc) {
-	  	if (err) throw err;
+	  Url.findOne({ urlNum: id }, function(err, doc) {
+	  	if (err) console.log(err);
 	  	
 	  	if(doc){
 	  		res.redirect('http://' + doc.url);
