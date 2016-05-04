@@ -3,8 +3,7 @@
 var path = process.cwd();
 var Url = require('../models/url');
 var random = require('../common/random');
-require('dotenv').load();
-
+require('dotenv').load().config({silent: true});
 module.exports = function (app) {
 	
 	app.get('/',function (req, res) {
